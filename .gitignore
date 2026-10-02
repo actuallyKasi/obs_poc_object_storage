@@ -1,0 +1,11 @@
+.tools/
+.symphony/
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+.venv/
+node_modules/
+dist/
+.DS_Store
