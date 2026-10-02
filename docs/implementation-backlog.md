@@ -1,6 +1,6 @@
 # Symphony implementation backlog
 
-These are local issue drafts. No tracker issues have been created. SPEC.md remains the detailed contract.
+Published as [GitHub issues #1–#6](https://github.com/actuallyKasi/obs_poc_object_storage/issues). SPEC.md remains the detailed contract. Only #1 is initially labeled `symphony-ready`; other issues wait for dependency integration.
 
 Start with one active issue and one Symphony agent. Dispatch the next issue after its dependencies have been integrated into the source branch; merely listing a dependency in issue text is not a scheduler guarantee.
 
