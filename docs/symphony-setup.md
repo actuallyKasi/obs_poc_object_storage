@@ -1,6 +1,6 @@
 # Symphony setup
 
-Status: local preparation; tracker selection and repository/project URL are required before dispatch.
+Tracker: GitHub Issues in `actuallyKasi/obs_poc_object_storage`. The runnable configuration is [WORKFLOW.md](../WORKFLOW.md). Only open issues labeled `symphony-ready` are dispatched, with one active agent.
 
 ## Runtime
 
@@ -14,13 +14,13 @@ The installer checks the release's SHA256 and stores the binary under ignored `.
 
 ## Work queue
 
-The upstream implementation supports Linear, GitHub Issues, Jira Cloud, Asana, and GitLab. Choose a tracker and scope before generating the runnable WORKFLOW.md. Keep tokens in host environment/credential storage, never in repository files or chat.
+The upstream implementation supports several trackers; this project uses GitHub Issues. Keep tokens in host environment/credential storage, never in repository files or chat. `tools/symphony/run.sh` obtains a token from the existing GitHub CLI login without printing or persisting it.
 
 The initial queue is drafted in [implementation-backlog.md](implementation-backlog.md). Use one agent initially and only dispatch the first ready issue. For GitHub, explicitly configure open/closed states and a dedicated required label so unrelated issues cannot be selected. Stage dependent issues without the dispatch label until prerequisite code is integrated.
 
 Each issue gets a separate workspace. Bootstrap it from a committed repository snapshot. Preserve results on a branch before closing an issue; Symphony can clean up terminal-issue workspaces. Do not point disposable issue workspaces at the primary checkout.
 
-## Workflow to configure once the tracker is selected
+## Configured workflow
 
 - tracker: selected adapter, exact project/repository, host-side credential reference, active/terminal states, dispatch labels.
 - workspace: an isolated directory outside the primary checkout.
@@ -29,7 +29,7 @@ Each issue gets a separate workspace. Bootstrap it from a committed repository s
 - codex.command: `codex app-server`, retaining the user's configured model.
 - Codex sandbox: workspace write with network access; verify Docker socket access before assigning integration work. Surface access failures rather than weakening the policy silently.
 - Prompt: read AGENTS.md and SPEC.md, execute the assigned acceptance tests, and preserve work for review.
-- Publication/reporting: configure the agreed issue/PR update behavior when connecting the tracker. Local preparation has not posted messages, created issues, or published code.
+- Publication/reporting: the agent maintains one issue workpad, pushes its branch, and opens a draft PR. It then removes `symphony-ready` and adds `symphony-review`. Blocked work gets `symphony-blocked`. Issues remain open until review/integration; no automatic merging.
 
 The pinned executable requires its preview acknowledgement flag on launch:
 
@@ -44,3 +44,11 @@ This flag is required by the upstream CLI even though the workflow exposes confi
 - [Pinned setup documentation](https://github.com/openai/symphony/blob/v0.0.3/elixir/README.md)
 - [Official release](https://github.com/openai/symphony/releases/tag/v0.0.3)
 - [CLI launch requirements](https://github.com/openai/symphony/blob/v0.0.3/elixir/lib/symphony_elixir/cli.ex)
+
+## Start and inspect
+
+```sh
+./tools/symphony/run.sh
+```
+
+Dashboard: http://127.0.0.1:8090/ . State API: http://127.0.0.1:8090/api/v1/state . Stop the foreground process with Ctrl-C. Removing the dispatch label also makes an issue ineligible to continue; preserve its branch first.
