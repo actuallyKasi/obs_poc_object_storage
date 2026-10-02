@@ -27,6 +27,7 @@ Each issue gets a separate workspace. Bootstrap it from a committed repository s
 - hooks.after_create: clone the agreed source repository and create an issue branch.
 - agent.max_concurrent_agents: 1; agent.max_turns: 20.
 - codex.command: `codex app-server`, retaining the user's configured model.
+- codex.approval_policy: `never`, compatible with the installed CLI. Symphony v0.0.3's default `reject` object was rejected by Codex CLI 0.159.2; the workspace sandbox remains enabled.
 - Codex sandbox: workspace write with network access; verify Docker socket access before assigning integration work. Surface access failures rather than weakening the policy silently.
 - Prompt: read AGENTS.md and SPEC.md, execute the assigned acceptance tests, and preserve work for review.
 - Publication/reporting: the agent maintains one issue workpad, pushes its branch, and opens a draft PR. It then removes `symphony-ready` and adds `symphony-review`. Blocked work gets `symphony-blocked`. Issues remain open until review/integration; no automatic merging.
