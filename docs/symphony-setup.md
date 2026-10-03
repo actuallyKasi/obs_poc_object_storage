@@ -29,6 +29,7 @@ Each issue gets a separate workspace. Bootstrap it from a committed repository s
 - codex.command: `codex app-server`, retaining the user's configured model.
 - codex.approval_policy: `never`, compatible with the installed CLI. Symphony v0.0.3's default `reject` object was rejected by Codex CLI 0.159.2; the workspace sandbox remains enabled.
 - Codex sandbox: workspace write with network access; verify Docker socket access before assigning integration work. Surface access failures rather than weakening the policy silently.
+- Issue #1's Git directory is explicitly listed in `turn_sandbox_policy.writableRoots` so branch and commit operations can write metadata. This is a scoped grant for `/Users/kasi/repos/obs_poc_object_storage-workspaces/GH-1/.git`; verify it in the actual agent session. Add the corresponding issue Git path before dispatching later work. No chmod change or global sandbox removal is required by this configuration.
 - Prompt: read AGENTS.md and SPEC.md, execute the assigned acceptance tests, and preserve work for review.
 - Publication/reporting: the agent maintains one issue workpad, pushes its branch, and opens a draft PR. It then removes `symphony-ready` and adds `symphony-review`. Blocked work gets `symphony-blocked`. Issues remain open until review/integration; no automatic merging.
 

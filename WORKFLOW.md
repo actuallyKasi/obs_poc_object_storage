@@ -27,6 +27,8 @@ codex:
   turn_sandbox_policy:
     type: workspaceWrite
     networkAccess: true
+    writableRoots:
+      - /Users/kasi/repos/obs_poc_object_storage-workspaces/GH-1/.git
 server:
   host: 127.0.0.1
   port: 8090
