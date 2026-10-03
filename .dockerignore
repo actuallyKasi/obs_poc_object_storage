@@ -1,0 +1,7 @@
+*
+!tools/
+!tools/foundation/
+!tools/foundation/**
+!tests/
+!tests/integration/
+!tests/integration/foundation.py
