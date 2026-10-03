@@ -1,0 +1,80 @@
+x-tooling: &tooling
+  image: ${COMPOSE_PROJECT_NAME:?Use tools/compose.sh}-python:gh1
+  build:
+    context: .
+    dockerfile: tools/foundation/Dockerfile
+  environment: &s3-env
+    S3_ENDPOINT: http://object-store:8333
+    S3_BUCKET: traces
+    AWS_DEFAULT_REGION: us-east-1
+    AWS_ACCESS_KEY_ID: ${LOCAL_S3_ACCESS_KEY:?Run make configure}
+    AWS_SECRET_ACCESS_KEY: ${LOCAL_S3_SECRET_KEY:?Run make configure}
+  mem_limit: 1g
+  cpus: 2
+
+services:
+  credential-init:
+    <<: *tooling
+    command: [storage.py, credentials]
+    volumes:
+      - credentials:/credentials
+    mem_limit: 128m
+    cpus: 0.5
+  object-store:
+    image: chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
+    command: [mini, '-dir=/data', '-ip=object-store', '-ip.bind=0.0.0.0',
+      '-s3.config=/credentials/s3.json', '-s3.autoCreateBucket=false',
+      '-s3.allowDeleteBucketNotEmpty=false', '-webdav=false', '-admin.ui=false',
+      '-s3.port.iceberg=0', '-s3.port.lance=0', '-master.telemetry=false',
+      '-volume.max=8', '-master.volumeSizeLimitMB=128']
+    depends_on:
+      credential-init:
+        condition: service_completed_successfully
+    ports:
+      - '127.0.0.1:${S3_PORT:-8333}:8333'
+    networks: [default, ingress]
+    volumes:
+      - object-data:/data
+      - credentials:/credentials:ro
+    mem_limit: 1g
+    cpus: 1
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://localhost:9333/cluster/status']
+      interval: 3s
+      timeout: 2s
+      retries: 30
+    stop_grace_period: 30s
+  storage-init:
+    <<: *tooling
+    command: [storage.py, init]
+    depends_on:
+      object-store:
+        condition: service_healthy
+    mem_limit: 128m
+    cpus: 0.5
+  otel-gateway:
+    image: otel/opentelemetry-collector-contrib:0.123.0@sha256:e39311df1f3d941923c00da79ac7ba6269124a870ee87e3c3ad24d60f8aee4d2
+    command: ['--config=/etc/otelcol-contrib/config.yaml']
+    volumes:
+      - ./config/otel-gateway.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - '127.0.0.1:${OTLP_GRPC_PORT:-4317}:4317'
+      - '127.0.0.1:${OTLP_HTTP_PORT:-4318}:4318'
+    networks: [default, ingress]
+    mem_limit: 512m
+    cpus: 1
+  tooling:
+    <<: *tooling
+    profiles: [tools]
+    depends_on:
+      storage-init:
+        condition: service_completed_successfully
+
+volumes:
+  object-data:
+  credentials:
+
+networks:
+  default:
+    internal: true
+  ingress: {}
