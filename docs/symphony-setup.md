@@ -26,10 +26,10 @@ Each issue gets a separate workspace. Bootstrap it from a committed repository s
 - workspace: an isolated directory outside the primary checkout.
 - hooks.after_create: clone the agreed source repository and create an issue branch.
 - agent.max_concurrent_agents: 1; agent.max_turns: 20.
-- codex.command: `codex app-server`, retaining the user's configured model.
+- codex.command: a local Python stdio launcher for `codex app-server`, retaining the user's configured model. It lives in the primary checkout so existing issue clones can use it without being updated first.
 - codex.approval_policy: `never`, compatible with the installed CLI. Symphony v0.0.3's default `reject` object was rejected by Codex CLI 0.159.2; the workspace sandbox remains enabled.
 - Codex sandbox: workspace write with network access; verify Docker socket access before assigning integration work. Surface access failures rather than weakening the policy silently.
-- Issue #1's Git directory is explicitly listed in `turn_sandbox_policy.writableRoots` so branch and commit operations can write metadata. This is a scoped grant for `/Users/kasi/repos/obs_poc_object_storage-workspaces/GH-1/.git`; verify it in the actual agent session. Add the corresponding issue Git path before dispatching later work. No chmod change or global sandbox removal is required by this configuration.
+- `tools/symphony/codex-app-server.py` automatically sets each turn's writable roots to the active clone and its `.git` directory. It validates that the launch directory is a `GH-number` clone directly under the configured workspace root, rejects a different request cwd or additional writable roots, and requires a local `.git` directory. This covers future issue numbers without per-issue configuration. Network access and other turn policy settings remain configured in WORKFLOW.md. The sandbox remains `workspaceWrite`; the launcher does not grant write access to other issue clones. Linked Git worktrees are intentionally unsupported.
 - Prompt: read AGENTS.md and SPEC.md, execute the assigned acceptance tests, and preserve work for review.
 - Publication/reporting: the agent maintains one issue workpad, pushes its branch, and opens a draft PR. It then removes `symphony-ready` and adds `symphony-review`. Blocked work gets `symphony-blocked`. Issues remain open until review/integration; no automatic merging.
 
@@ -54,3 +54,17 @@ This flag is required by the upstream CLI even though the workflow exposes confi
 ```
 
 Dashboard: http://127.0.0.1:8090/ . State API: http://127.0.0.1:8090/api/v1/state . Stop the foreground process with Ctrl-C. Removing the dispatch label also makes an issue ineligible to continue; preserve its branch first.
+
+## Launcher checks
+
+The launcher uses Python's standard library. Validate workspace boundaries, future issue numbers, policy preservation, protocol forwarding, and large responses with the pinned container:
+
+```sh
+docker run --rm --network none --read-only --tmpfs /tmp:exec \
+  -e PYTHONDONTWRITEBYTECODE=1 \
+  -v "$PWD/tools/symphony:/tests:ro" \
+  python:3.12.10-slim-bookworm@sha256:fd95fa221297a88e1cf49c55ec1828edd7c5a428187e67b5d1805692d11588db \
+  python /tests/test_codex_app_server.py
+```
+
+The executable tmpfs is needed only for the fake Codex process used in the transport check. No model calls are made by these tests. After changing the launcher or workflow, verify Git branch creation in an actual Symphony session before declaring the permission failure resolved.

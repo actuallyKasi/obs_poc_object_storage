@@ -21,14 +21,12 @@ agent:
   max_concurrent_agents: 1
   max_turns: 20
 codex:
-  command: codex app-server
+  command: python3 /Users/kasi/repos/obs_poc_object_storage/tools/symphony/codex-app-server.py --workspace-root /Users/kasi/repos/obs_poc_object_storage-workspaces
   approval_policy: never
   thread_sandbox: workspace-write
   turn_sandbox_policy:
     type: workspaceWrite
     networkAccess: true
-    writableRoots:
-      - /Users/kasi/repos/obs_poc_object_storage-workspaces/GH-1/.git
 server:
   host: 127.0.0.1
   port: 8090

@@ -3,6 +3,7 @@ set -eu
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 cd "$repo_root"
 command -v codex >/dev/null
+command -v python3 >/dev/null
 command -v gh >/dev/null
 command -v docker >/dev/null
 docker info >/dev/null
