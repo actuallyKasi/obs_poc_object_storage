@@ -20,4 +20,12 @@ make test
 make down
 ```
 
-The trace writer, query API and Grafana plugin are not implemented in this slice.
+GH-2 adds the [Grafana compatibility fixture](docs/grafana-fixture.md):
+
+```sh
+make test-grafana
+```
+
+Open `http://localhost:3000/d/trace-contract` for the provisioned trace dashboard.
+The datasource currently serves hand-authored fixtures; the storage-backed query
+API, writer, search and OTLP-to-Grafana path remain later issue work.

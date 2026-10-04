@@ -5,3 +5,13 @@
 !tests/
 !tests/integration/
 !tests/integration/foundation.py
+!tests/fixtures/
+!tests/fixtures/**
+!services/
+!services/trace-fixture/
+!services/trace-fixture/**
+!plugins/
+!plugins/kasi-objecttraces-datasource/
+!plugins/kasi-objecttraces-datasource/**
+**/node_modules
+**/dist
