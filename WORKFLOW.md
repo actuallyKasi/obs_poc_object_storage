@@ -47,6 +47,8 @@ Create branch symphony/{{ issue.identifier }} unless already on that issue branc
 
 Build and run every required acceptance check. Preserve exact time/attribute semantics and explicit trace lookup scope. Do not mark unrun checks as passing. If sandbox/tool access blocks Docker or another required operation, record the exact failure; do not silently relax policies or declare success.
 
+For browser acceptance checks, use the symphony_playwright MCP tools. They run isolated headless Chromium in Docker; reach host-published Grafana at http://host.docker.internal:3000, not localhost. Browser output under /artifacts maps to this clone's .tools/playwright directory. Copy selected screenshots or other evidence into docs/validation when needed for review. Use real rendered UI interactions, console messages, and network requests to verify the issue criteria. Resume any browser checks previously blocked on Computer Use availability. Do not require the desktop Chrome plugin for these checks.
+
 When the issue is implemented and validated, commit the changes, push the issue branch using the existing GitHub CLI credential helper if needed, and create a draft pull request against main. Link the PR and validation evidence in the workpad. Do not use a closing keyword in the PR: the issue remains open for review. Attach any created PR to the Codex chat using the app tool if it is available.
 
 After the branch and PR are safely published, add symphony-review and remove symphony-ready from this issue. Make label removal the final tracker mutation, because it makes this issue ineligible for further dispatch. Do not close the issue or merge the PR. Do not enable any dependent issue.

@@ -50,10 +50,23 @@ This flag is required by the upstream CLI even though the workflow exposes confi
 ## Start and inspect
 
 ```sh
+sh tools/symphony/browser/build.sh
 ./tools/symphony/run.sh
 ```
 
 Dashboard: http://127.0.0.1:8090/ . State API: http://127.0.0.1:8090/api/v1/state . Stop the foreground process with Ctrl-C. Removing the dispatch label also makes an issue ineligible to continue; preserve its branch first.
+
+## Browser access
+
+Symphony's launcher configures `symphony_playwright` MCP only for its own Codex app-server process. Each session starts a disposable headless Chromium container, with an isolated browser profile and no host login cookies. The Node base image is pinned by digest; Playwright MCP 0.0.83 and its browser package are pinned in `tools/symphony/browser/package-lock.json`. The build uses the Docker host's native architecture; verify the printed image architecture matches the Mac (linux/arm64 for Apple Silicon).
+
+Use `http://host.docker.internal:3000` for Grafana inside the browser. Docker Desktop routes this to the host-published service. Browser requests are configured to allow HTTP origins on `host.docker.internal`; this is a convenience restriction, not a security boundary. The browser container has no Docker socket, repository, or host home directory mounted. Only the active issue's ignored `.tools/playwright` output directory is mounted at `/artifacts`. Copy selected evidence into `docs/validation` before committing. Profiles and containers are discarded when the MCP session ends; output files remain in the clone.
+
+The worker uses browser snapshots, clicks, console messages, network requests, and screenshots for real Grafana acceptance checks. Desktop Chrome approval is not needed. This configuration preserves the user's model and the existing workspace sandbox. See [Playwright MCP](https://github.com/microsoft/playwright-mcp) for its tools and container limitations.
+
+After changing browser dependencies, rebuild the image before starting or resuming workers. Existing sessions retain their original tools; the next Symphony session gets the new configuration. `run.sh` checks that the image is installed.
+
+Validation on 2026-10-05: `sh tools/symphony/browser/build.sh` succeeded and produced a linux/arm64 image on the ARM64 Mac. The containerized launcher suite below passed all nine tests. A real Codex app-server `mcpServerStatus/list` request discovered 25 tools for `symphony_playwright`. MCP `browser_navigate`, `browser_wait_for`, and `browser_take_screenshot` reached the GH-2 Grafana dashboard shell at `http://host.docker.internal:3000/d/trace-contract` and saved artifacts in that clone. The trace itself did **not** render: the browser reported a plugin `react/jsx-runtime` import returning 404. That issue was recorded in the GH-2 workpad for the resumed worker; browser access passing does not mean GH-2 acceptance passes.
 
 ## Launcher checks
 

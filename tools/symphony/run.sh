@@ -7,6 +7,10 @@ command -v python3 >/dev/null
 command -v gh >/dev/null
 command -v docker >/dev/null
 docker info >/dev/null
+if ! docker image inspect obs-symphony-playwright:0.0.83 >/dev/null 2>&1; then
+  echo 'Build the browser first: sh tools/symphony/browser/build.sh' >&2
+  exit 1
+fi
 if [ -z "${GITHUB_TOKEN:-}" ]; then
   GITHUB_TOKEN=$(gh auth token)
   export GITHUB_TOKEN

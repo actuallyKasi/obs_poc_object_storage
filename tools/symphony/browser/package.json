@@ -1,0 +1,8 @@
+{
+  "name": "symphony-browser",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "@playwright/mcp": "0.0.83"
+  }
+}
