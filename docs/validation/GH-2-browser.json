@@ -1,0 +1,42 @@
+{
+  "result": "PASS",
+  "dashboard": "Skip to main content\nGrafana\nHome\nStarred\nDashboards\nExplore\nDrilldown\nAlerting\nAdministration\nHome\nDashboards\nTrace contract fixture\nSearch...\nctrl+k\nSign in\nEdit\nExport \nShare\n2026-10-02 00:00:00 to 2026-10-02 00:01:00\nRefresh\nCheckout fixture · all retained data\ncheckout: POST /checkout\nFeedback\nShare\nTrace ID\n0123456789abcdef0123456789abcdef\nStart time\n2026-10-02 00:00:00.000\n(3 days ago)\nDuration\n10ms\nServices\n2\nSpan Filters\n2 spans\nPrev\nNext\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\nService & Operation\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\ncheckout POST /checkout (10ms)\n10ms\npayments charge card (1.5ms)\n1.5ms\ncharge card\nService:paymentsDuration:1.5msStart Time:1ms (00:00:00.001)Kind:CLIENTStatus:errorStatus Message:Card declinedLibrary Name:fixtureLibrary Version:1.0.0\nShare\nSpan attributeserrortrue\nResource attributesservice.namepayments\nEvents\n1\n1.25ms (exception)exception.messageCard declined\nEvent timestamps are relative to the start time of the full trace.\nWarnings1\nReferences 2\ncheckoutPOST /checkout\n0123456789abcdef0123456789abcdef\n1111111111111111\nView Linked Span\nabcdef0123456789abcdef0123456789\n3333333333333333\nattributesreasonpayment attempt",
+  "explore": "Skip to main content\nGrafana\nHome\nStarred\nDashboards\nExplore\nDrilldown\nAlerting\nAdministration\nHome\nExplore\nObject Storage Traces\nSearch...\nctrl+k\nSign in\nQuery history\nShare\nExplore\nOutline\nSplit\nAdd to dashboard\nQueries\nTraces\nA\n(Object Storage Traces)\n1 info\nTrace ID  Lookup scope \nSelected time range\nAll retained data\n\nDeterministic fixture · Scope: All retained data · Completeness unknown\n\nAdd query\nQuery inspector\nTrace\ncheckout: POST /checkout\nFeedback\nShare\nTrace ID\n0123456789abcdef0123456789abcdef\nStart time\n2026-10-02 00:00:00.000\n(3 days ago)\nDuration\n10ms\nServices\n2\nSpan Filters\n2 spans\nPrev\nNext\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\nService & Operation\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\ncheckout POST /checkout (10ms)\n10ms\npayments charge card (1.5ms)\n1.5ms\ncharge card\nService:paymentsDuration:1.5msStart Time:1ms (00:00:00.001)Kind:CLIENTStatus:errorStatus Message:Card declinedLibrary Name:fixtureLibrary Version:1.0.0\nShare\nSpan attributeserrortrue\nResource attributesservice.namepayments\nEvents\n1\n1.25ms (exception)exception.messageCard declined\nEvent timestamps are relative to the start time of the full trace.\nWarnings1\nReferences 2\ncheckoutPOST /checkout\n0123456789abcdef0123456789abcdef\n1111111111111111\nView Linked Span\nabcdef0123456789abcdef0123456789\n3333333333333333\nattributesreasonpayment attempt",
+  "linked": "Skip to main content\nGrafana\nHome\nStarred\nDashboards\nExplore\nDrilldown\nAlerting\nAdministration\nHome\nExplore\nObject Storage Traces\nSearch...\nctrl+k\nSign in\nQuery history\nShare\nExplore\nQueries\nTraces\nA\n(Object Storage Traces)\n1 info\nTrace ID  Lookup scope \nSelected time range\nAll retained data\n\nDeterministic fixture · Scope: All retained data · Completeness unknown\n\nAdd query\nQuery inspector\nTrace\ncheckout: POST /checkout\nFeedback\nShare\nTrace ID\n0123456789abcdef0123456789abcdef\nStart time\n2026-10-02 00:00:00.000\n(3 days ago)\nDuration\n10ms\nServices\n2\nSpan Filters\n2 spans\nPrev\nNext\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\nService & Operation\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\ncheckout POST /checkout (10ms)\n10ms\npayments charge card (1.5ms)\n1.5ms\ncharge card\nService:paymentsDuration:1.5msStart Time:1ms (00:00:00.001)Kind:CLIENTStatus:errorStatus Message:Card declinedLibrary Name:fixtureLibrary Version:1.0.0\nShare\nSpan attributeserrortrue\nResource attributesservice.namepayments\nEvents\n1\n1.25ms (exception)exception.messageCard declined\nEvent timestamps are relative to the start time of the full trace.\nWarnings1\nReferences 2\ncheckoutPOST /checkout\n0123456789abcdef0123456789abcdef\n1111111111111111\nView Linked Span\nabcdef0123456789abcdef0123456789\n3333333333333333\nattributesreasonpayment attempt\nAdd to dashboard\nA\n(Object Storage Traces)\n1 info\nAdd query\nQuery inspector\nTrace\npayments: payment attempt\nFeedback\nShare\nTrace ID\nabcdef0123456789abcdef0123456789\nStart time\n2026-10-02 00:00:00.000\n(3 days ago)\nDuration\n10ms\nServices\n1\nSpan Filters\n1 spans\nPrev\nNext\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\nService & Operation\n0μs\n2.5ms\n5ms\n7.5ms\n10ms\npayments payment attempt (10ms)\n10ms",
+  "scopeError": "Query error\nNot found in selected time range; explicitly choose All retained data to widen",
+  "proxy": [
+    {
+      "url": "http://host.docker.internal:3000/api/datasources/proxy/uid/object-storage-traces/api/v1/traces/0123456789abcdef0123456789abcdef?",
+      "status": 200
+    },
+    {
+      "url": "http://host.docker.internal:3000/api/datasources/proxy/uid/object-storage-traces/api/v1/traces/0123456789abcdef0123456789abcdef?",
+      "status": 200
+    },
+    {
+      "url": "http://host.docker.internal:3000/api/datasources/proxy/uid/object-storage-traces/api/v1/traces/abcdef0123456789abcdef0123456789?",
+      "status": 200
+    },
+    {
+      "url": "http://host.docker.internal:3000/api/datasources/proxy/uid/object-storage-traces/api/v1/traces/0123456789abcdef0123456789abcdef?start=2026-10-02T00%3A00%3A00.000Z&end=2026-10-02T00%3A01%3A00.000Z",
+      "status": 200
+    },
+    {
+      "url": "http://host.docker.internal:3000/api/datasources/proxy/uid/object-storage-traces/api/v1/traces/0123456789abcdef0123456789abcdef?start=2026-10-02T00%3A00%3A30.000Z&end=2026-10-02T00%3A01%3A30.000Z",
+      "status": 404
+    },
+    {
+      "url": "http://host.docker.internal:3000/api/datasources/proxy/uid/object-storage-traces/api/v1/traces/0123456789abcdef0123456789abcdef?",
+      "status": 200
+    }
+  ],
+  "successfulConsole": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "runRequest.catchError Error: Not found in selected time range; explicitly choose All retained data to widen\n    at http://host.docker.internal:3000/public/plugins/kasi-objecttraces-datasource/module.js?_cache=0.1.0:1:3935\n    at L.A [as _subscribe] (http://host.docker.internal:3000/public/build/5524.fe38a12f76ca4f420c75.js:30:266)\n    at L._trySubscribe (http://host.docker.internal:3000/public/build/758.31a4ad4733d36ad00476.js:182:10174)\n    at http://host.docker.internal:3000/public/build/758.31a4ad4733d36ad00476.js:182:10097\n    at f (http://host.docker.internal:3000/public/build/758.31a4ad4733d36ad00476.js:38:2689)\n    at L.subscribe (http://host.docker.internal:3000/public/build/758.31a4ad4733d36ad00476.js:182:10007)\n    at http://host.docker.internal:3000/public/build/5524.fe38a12f76ca4f420c75.js:351:108611\n    at E.R._error (http://host.docker.internal:3000/public/build/758.31a4ad4733d36ad00476.js:157:12258)\n    at te.error (http://host.docker.internal:3000/public/build/758.31a4ad4733d36ad00476.js:173:28097)\n    at te._error (http://host.docker.internal:3000/public/build/758.31a4ad4733d36ad00476.js:173:28443)"
+  ],
+  "pageErrors": [],
+  "requestOrigins": [
+    "http://host.docker.internal:3000"
+  ]
+}
