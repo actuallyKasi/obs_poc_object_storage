@@ -70,6 +70,8 @@ After changing browser dependencies, rebuild the image before starting or resumi
 
 Validation on 2026-10-05: `sh tools/symphony/browser/build.sh` succeeded and produced a linux/arm64 image on the ARM64 Mac. The containerized launcher suite below passed all nine tests. A real Codex app-server `mcpServerStatus/list` request discovered 25 tools for `symphony_playwright`. MCP `browser_navigate`, `browser_wait_for`, and `browser_take_screenshot` reached the GH-2 Grafana dashboard shell at `http://host.docker.internal:3000/d/trace-contract` and saved artifacts in that clone. The trace itself did **not** render: the browser reported a plugin `react/jsx-runtime` import returning 404. That issue was recorded in the GH-2 workpad for the resumed worker; browser access passing does not mean GH-2 acceptance passes.
 
+Follow-up validation: the first worker fixed the JSX import but hit `MCP tool call requires approval, but approval policy is never`. After adding the explicit MCP approval setting, all nine launcher tests passed again. Resumed worker thread `01a109f5-1d5a-7fa2-a1c3-c38b5d5c4f27` successfully called the injected `symphony_playwright.browser_navigate` on the Grafana dashboard and received a real page title and snapshot on 2026-10-05 at 10:47:56 Singapore time. The worker confirmed the approval blocker was resolved and continued acceptance checks. This verifies navigation through Codex's actual tool approval path.
+
 ## Launcher checks
 
 The launcher uses Python's standard library. Validate workspace boundaries, future issue numbers, policy preservation, protocol forwarding, and large responses with the pinned container:
