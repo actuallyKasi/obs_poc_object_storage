@@ -44,12 +44,34 @@ def grant_git_access(request, workspace):
     return request
 
 
+def app_server_command(workspace):
+    """Configure a fresh container browser only for this Symphony app server."""
+    artifacts = workspace / ".tools" / "playwright"
+    artifacts.mkdir(parents=True, exist_ok=True)
+    browser_args = [
+        "run", "--rm", "-i", "--init", "--shm-size=256m",
+        "--cap-drop=ALL", "--security-opt=no-new-privileges",
+        "--mount", f"type=bind,src={artifacts},dst=/artifacts",
+        "--workdir", "/artifacts", "obs-symphony-playwright:0.0.83",
+        "--headless", "--browser", "chromium", "--no-sandbox",
+        "--isolated", "--output-dir", "/artifacts",
+        "--allowed-origins", "http://host.docker.internal:*",
+    ]
+    command = ["codex", "app-server"]
+    for key, value in {
+        "command": "docker", "args": browser_args,
+        "startup_timeout_sec": 60, "tool_timeout_sec": 120,
+    }.items():
+        command.extend(["-c", f"mcp_servers.symphony_playwright.{key}={json.dumps(value)}"])
+    return command
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace-root", required=True)
     args = parser.parse_args()
     workspace = validate_workspace(Path.cwd(), args.workspace_root)
-    process = subprocess.Popen(["codex", "app-server"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    process = subprocess.Popen(app_server_command(workspace), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     failed = threading.Event()
 
     def forward_requests():

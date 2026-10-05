@@ -88,6 +88,17 @@ class LauncherTests(unittest.TestCase):
         request = {"id": 42, "result": {"output": "tool result"}}
         self.assertIs(launcher.grant_git_access(request, self.workspace), request)
 
+    def test_browser_configuration_is_scoped_to_the_issue(self):
+        command = launcher.app_server_command(self.workspace)
+        self.assertEqual(command[:2], ["codex", "app-server"])
+        overrides = dict(value.split("=", 1) for value in command[3::2])
+        arguments = json.loads(overrides["mcp_servers.symphony_playwright.args"])
+        self.assertIn(f"type=bind,src={self.workspace}/.tools/playwright,dst=/artifacts", arguments)
+        self.assertIn("--isolated", arguments)
+        self.assertIn("obs-symphony-playwright:0.0.83", arguments)
+        self.assertNotIn(str(self.workspace), arguments)
+        self.assertFalse(any(key.startswith("model") or key.startswith("sandbox") for key in overrides))
+
     def test_transport_forwards_large_responses_and_exits_on_eof(self):
         fake_bin = self.root / "bin"
         fake_bin.mkdir()
