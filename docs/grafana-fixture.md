@@ -27,7 +27,7 @@ this workspace's volumes. It never shares another workspace's project. Set
 needed only for the full foundation stack; do not stop other workspaces to free
 them. Ordinary `make down` preserves volumes.
 
-Grafana listens on loopback and allows anonymous Viewer access for this local
+Grafana listens on loopback and allows anonymous Editor access (required for Explore) for this local
 fixture. Only `kasi-objecttraces-datasource` is permitted unsigned. Provisioning
 sets UID `object-storage-traces`, proxy access and internal URL
 `http://querier:8080`. The browser uses Grafana's provided datasource proxy URL
@@ -56,7 +56,9 @@ selected review evidence into `docs/validation`. Desktop Chrome is not needed.
 
 The second fixture ID `abcdef0123456789abcdef0123456789` contains span
 `3333333333333333` (`payment attempt`). Link IDs and attributes are passed to
-Grafana's native reference view; full search/link navigation is later M3 work.
+Grafana's native reference view. Native links use Grafana's `query` field, which
+the datasource accepts as the target trace ID while preserving lookup scope.
+Explore opens the linked trace in a split pane. Search-result links remain M3 work.
 
 ## Semantics and pins
 
@@ -77,3 +79,18 @@ See [pinned upstream contracts](contracts/grafana-12.2.0/README.md) and
 [validation evidence](validation/GH-2.md). Container image digests and exact npm
 dependencies are committed. Browser checks complement the frame and HTTP tests;
 the `make` target alone does not claim visual acceptance.
+
+## Browser regression check
+
+`tests/integration/grafana-browser.js` is an async Playwright function for the
+injected `symphony_playwright.browser_run_code_unsafe` tool's `code` argument.
+Run after `make test-grafana`. It exercises real controls, checks rendering,
+console and network traffic, and writes three screenshots to `/artifacts`.
+Its returned JSON and selected screenshots are retained in `docs/validation`.
+Only the deliberately out-of-range query should produce HTTP 404 console logs.
+Use **Run query** after editing the ID or scope; edits do not issue requests.
+
+Image-bundled plugin assets live under `/opt/grafana/plugins`, outside the
+persistent `/var/lib/grafana` volume. Rebuilding therefore updates the plugin
+without resetting Grafana state. Anonymous Editor access is for this loopback-only
+local PoC; it permits Explore and editing dashboards without manual login.

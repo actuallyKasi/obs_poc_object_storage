@@ -6,4 +6,6 @@ COPY plugins/kasi-objecttraces-datasource/ ./
 COPY tests/fixtures/trace.json ./trace.json
 RUN npm test && npm run build && cp plugin.json dist/ && mkdir -p dist/img && cp logo.svg dist/img/logo.svg
 FROM grafana/grafana:12.2.0@sha256:74144189b38447facf737dfd0f3906e42e0776212bf575dc3334c3609183adf7
-COPY --from=build /plugin/dist /var/lib/grafana/plugins/kasi-objecttraces-datasource
+# Keep image assets outside the persistent Grafana data volume so upgrades apply.
+ENV GF_PATHS_PLUGINS=/opt/grafana/plugins
+COPY --from=build /plugin/dist /opt/grafana/plugins/kasi-objecttraces-datasource

@@ -1,48 +1,38 @@
-# GH-2 validation status
+# GH-2 validation
 
 Date: 2026-10-05. Branch: `symphony/GH-2`.
 
 ## Result
 
-Containerized build, frame contracts, provisioning and HTTP proxy integration
-pass. **Acceptance remains incomplete:** the required real browser walkthrough
-is blocked by the injected Playwright tool approval policy. No validated draft PR is claimed.
+**PASS**: containerized build, frame contracts, real Grafana proxy integration,
+and isolated Docker Chromium walkthrough in Explore and the provisioned dashboard.
+No remaining acceptance blocker. This is the M0 fixture slice, not an implemented
+storage querier, ingestion pipeline, search flow or deduplication engine.
 
-## Environment and isolation
+## Environment and commands
 
-- `uname -m`: `arm64`.
-- `docker version`: client/server 29.7.2, Docker Desktop 4.88.1,
-  client darwin/arm64, server linux/arm64.
-- `docker info --format '{{.Architecture}} {{.NCPU}} {{.MemTotal}}'`:
-  `aarch64 8 8319770624` (about 7.75 GiB).
-- Project: `obs-gh1-1063179284`, derived by `tools/compose.sh` from this clone's
-  physical path. Only this project's Grafana and fixture were started.
-  Another workspace's running storage/Collector containers were left alone.
-- `docker image inspect obs-gh1-1063179284-grafana:gh2 obs-gh1-1063179284-fixture:gh2 --format '{{.RepoTags}} {{.Os}}/{{.Architecture}}'`:
-  both `linux/arm64`. Pinned Node builder also inspected as `linux/arm64`.
-
-## Passing checks
+- Host `uname -m`: `arm64`; Docker `aarch64`, 8 CPUs, 8319770624 bytes RAM.
+- Grafana and fixture images: `linux/arm64`, verified with `docker image inspect`.
+- Project `obs-gh1-1063179284` is derived from this clone's physical path by
+  `tools/compose.sh`. The inherited prefix retains this workspace's volumes.
+- Only this workspace's Grafana and fixture were started/recreated. No volume
+  reset, other-workspace changes, global cleanup, policy override or emulation.
+- Grafana host binding: `127.0.0.1:3000`; browser origin:
+  `http://host.docker.internal:3000`.
 
 ```sh
-mkdir -p .tools/buildx
 BUILDX_CONFIG="$PWD/.tools/buildx" make test-grafana
+docker image inspect obs-gh1-1063179284-grafana:gh2 obs-gh1-1063179284-fixture:gh2 \
+  --format '{{.RepoTags}} {{.Os}}/{{.Architecture}}'
+git diff --check
 ```
 
-Exit 0. This runs:
+All passed. The final build ran both Node contract tests, `tsc --noEmit`, webpack
+production compilation, health-checked Compose startup and:
 
-1. Containerized `npm ci` from the committed lockfile.
-2. Two Node contract tests: IDs, root/child parenting, equal-length frame arrays,
-   numeric field types, millisecond conversion, error display tag, typed values,
-   unsafe int64, nested values, base64 bytes, event timestamps/names, reference
-   IDs/tags, input immutability, ordering and missing-parent diagnostics.
-3. `tsc --noEmit` and webpack 5.99.5 production compilation, successful.
-4. Fresh Grafana/fixture startup with health checks and automatic provisioning.
-5. `./tools/compose.sh exec -T querier python - < tests/integration/grafana.py`:
-   Grafana version, provisioned datasource/dashboard, real Grafana proxy health
-   and trace requests, exact canonical nanoseconds and conflicting original
-   error attribute, events/links, explicit all-retained/bounded scope, untrimmed
-   block results, nanosecond overlap boundaries, malformed/one-sided/reversed/
-   oversized ranges, missing trace and linked trace responses.
+```sh
+./tools/compose.sh exec -T querier python - < tests/integration/grafana.py
+```
 
 Output:
 
@@ -50,73 +40,65 @@ Output:
 PASS Grafana version, provisioning, proxy, exact nanoseconds, typed attributes, events, links, paired scope, block boundaries, and HTTP errors
 ```
 
-Additional checks:
+The contract tests check IDs, parents, equal-length fields, numerical field types,
+1.5 ms duration, event times, boolean error tags, unsafe int64 strings, nested
+values, bytes, reference IDs/attributes, input immutability, sorting and missing
+parents. HTTP checks retain exact API nanoseconds, the original conflicting
+`error: false`, paired bounds, untrimmed blocks, nanosecond overlap boundaries,
+malformed/reversed/oversized ranges, missing IDs and linked trace responses.
 
-- `git ls-remote https://github.com/grafana/grafana.git 'refs/tags/v12.2.0*'`:
-  peeled commit `92f1fba9b4b6700328e99e97328d6639df8ddc3d`.
-- Downloaded `trace.ts`, `data.ts`, `dataFrame.ts` from that commit and `cmp`
-  verified each committed snapshot byte-for-byte. Hashes recorded in
-  `docs/contracts/grafana-12.2.0/README.md`.
-- `./tools/compose.sh port grafana 3000`: `127.0.0.1:3000`.
-- Grafana logs confirm plugin `kasi-objecttraces-datasource` registered and
-  dashboard provisioning finished. Only the named unsigned plugin is allowed.
-- `curl -fsS http://127.0.0.1:3000/api/health`: database `ok`, version `12.2.0`,
-  commit `92f1fba9b4b6700328e99e97328d6639df8ddc3d`.
-- `git diff --check`: passed.
+Grafana 12.2.0 packages and source snapshots are pinned to commit
+`92f1fba9b4b6700328e99e97328d6639df8ddc3d`; earlier validation compared committed
+snapshots byte-for-byte with upstream. See the [source contract record](../contracts/grafana-12.2.0/README.md).
 
-## Resolved tooling failures
+## Real browser evidence
 
-The earlier attempt's Git write restriction is resolved; the issue branch exists.
-The initial build in this attempt failed with:
+Executed [the regression function](../../tests/integration/grafana-browser.js)
+through injected `symphony_playwright.browser_run_code_unsafe`, using isolated
+Docker Chromium. Also used injected navigation, snapshots, console/network tools
+and real clicks during diagnosis. No desktop Chrome plugin was needed.
 
-```text
-failed to update builder last activity time: open /Users/kasi/.docker/buildx/activity/.tmp-default1553352955: operation not permitted
-```
+[Structured result](GH-2-browser.json) records **PASS** with rendered text,
+all trace response URLs/statuses, console messages and request origins.
 
-Using a writable, ignored workspace Buildx cache as shown above succeeded.
-No sandbox permissions were changed. `.tools` contents and `.env` are untracked
-and excluded from the commit and Docker build context.
+- [Dashboard screenshot](GH-2-dashboard.png): native 10 ms root and 1.5 ms child;
+  collapse/expand proves parenting; error marker and boolean tag, exception at
+  1.25 ms with `Card declined`, parent and linked IDs and link attributes.
+- [Explore screenshot](GH-2-explore.png): same native trace and inspected details;
+  the first Run click works. The native reference opens `payment attempt` and
+  trace `abcdef0123456789abcdef0123456789` in a split pane.
+- [Scope error screenshot](GH-2-scope-error.png): default selected-range lookup,
+  successful fixed range, then a range excluding the fixture. The 404 shows an
+  explicit widening hint; no automatic unbounded request occurs. Choosing
+  All retained data and Run query restores the trace.
+- Every observed browser request had the Grafana origin. Every trace request
+  used `/api/datasources/proxy/uid/object-storage-traces/api/v1/traces/...`.
+  Bounded calls carry paired `start`/`end`; all-retained calls omit both.
+- Successful views/navigation produced zero console warnings/errors. The
+  intentional 404 produced two expected console messages (HTTP 404 and Grafana's
+  handled query error). Zero uncaught page errors throughout, including recovery.
 
-## Resumed validation on 2026-10-05
+## Browser-discovered fixes
 
-The operator's preliminary Docker browser run found a runtime error:
-`SystemJS: failed to resolve 'react/jsx-runtime'`, with a 404 for
-`/react/jsx-runtime`. TypeScript now compiles classic JSX using the already
-imported React API; webpack no longer declares the unavailable JSX runtime as
-an external. The resulting AMD bundle lists only Grafana data/runtime/ui,
-React and RxJS as externals.
+1. Classic JSX avoids an unavailable `react/jsx-runtime` AMD external.
+2. Plugin assets moved outside the persistent data volume, which had masked the
+   rebuilt image with an old bundle. Existing Grafana data was preserved.
+3. Anonymous Editor role enables Explore on this local PoC; Viewer redirected
+   to Home. No real credentials were needed or committed.
+4. Explicit Run avoids overlapping blur/click requests; scope selector has an
+   explicit visible size under Grafana styles.
+5. Canonical API errors are converted to textual errors for Grafana; passing the
+   nested error object directly had caused a React render crash.
+6. Native reference `query` IDs override inherited `traceId` without changing
+   the chosen scope; editor changes clear the native-link alias.
 
-Re-ran `BUILDX_CONFIG="$PWD/.tools/buildx" make test-grafana`: **PASS**, exit 0.
-Both frame contract tests passed, TypeScript and webpack compiled successfully,
-Grafana was recreated and became healthy, and the containerized provisioning/
-data-proxy integration printed the PASS output above. Host remains `arm64`;
-Docker reports `aarch64 8 8319770624`. Both rebuilt service images inspect as
-`linux/arm64`. `./tools/compose.sh port grafana 3000` reports
-`127.0.0.1:3000`. `git diff --check` passed.
+## Earlier blockers and scope limits
 
-## Remaining blocker and unrun checks
+The previous Git/browser approval blockers are resolved. Initial Buildx writes
+outside the workspace were denied; the ignored `.tools/buildx` directory solves
+that without changing sandbox permissions. No runtime files or local credentials
+are included in commits.
 
-The required injected Docker browser tool was called directly:
-
-```text
-symphony_playwright.browser_navigate(
-  url="http://host.docker.internal:3000/d/trace-contract")
-→ MCP tool call requires approval, but approval policy is never
-```
-
-The read-only `symphony_playwright.browser_snapshot({})` succeeded but returned
-`Page URL: about:blank` with an empty snapshot. Tool discovery/read access does
-not establish permission to navigate. No desktop browser was required or used;
-no policy override or alternative browser execution was attempted.
-
-Explore/dashboard visual rendering, interactive span/error/event/reference
-inspection, and browser console/network acceptance remain **UNRUN** on the
-corrected build. No screenshots from this build or validated draft PR are
-claimed. HTTP tests establish proxy behavior, not browser acceptance. Resume
-with navigation permitted for the injected Playwright tools and follow
-`docs/grafana-fixture.md`, fixing any remaining visual compatibility errors
-before creating the requested validated draft PR or moving to review.
-
-The unrelated GH-1 foundation suite was not rerun. No full ingestion/storage
-query pipeline, search flow, deduplication engine or benchmark is claimed by
-this fixture-only milestone. No dependent issue was enabled.
+The unrelated GH-1 foundation suite was not rerun. Full ingestion, storage-query
+semantics, search, cancellation and benchmark acceptance belong to later issues.
+No dependent issue was enabled; this issue remains open for review.

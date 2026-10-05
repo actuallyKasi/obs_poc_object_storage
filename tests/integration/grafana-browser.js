@@ -1,0 +1,70 @@
+async (page) => {
+  const origin = 'http://host.docker.internal:3000';
+  const id = '0123456789abcdef0123456789abcdef';
+  const requests = [], responses = [], errors = [], consoleErrors = [];
+  const onRequest = r => requests.push(r.url());
+  const onResponse = r => responses.push({url:r.url(),status:r.status()});
+  const onError = e => errors.push(e.message);
+  const onConsole = m => { if (['error','warning'].includes(m.type())) consoleErrors.push(m.text()); };
+  page.on('request',onRequest); page.on('response',onResponse);
+  page.on('pageerror',onError); page.on('console',onConsole);
+  const assert = (v,m) => { if(!v) throw new Error(m); };
+  const child = () => page.getByRole('switch',{name:'payments charge card (1.5ms)',exact:true});
+  const details = async () => {
+    await child().click();
+    await page.getByRole('switch',{name:'Events 1',exact:true}).click();
+    await page.getByRole('switch').filter({hasText:'References'}).click();
+    const text = await page.locator('body').innerText();
+    for (const value of ['10ms','1.5ms','errortrue','1.25ms','exception','Card declined','1111111111111111','3333333333333333','abcdef0123456789abcdef0123456789','reasonpayment attempt']) assert(text.includes(value),'Missing rendered '+value);
+    return text;
+  };
+  try {
+    await page.setViewportSize({width:1600,height:1400});
+    await page.goto(origin+'/d/trace-contract');
+    await child().waitFor();
+    await page.getByRole('button',{name:'Collapse all',exact:true}).click();
+    assert(!await child().isVisible(),'Child should collapse with root hierarchy');
+    await page.getByRole('button',{name:'Expand all',exact:true}).click();
+    await child().waitFor();
+    const dashboard = await details();
+    await page.screenshot({path:'/artifacts/GH-2-dashboard.png',fullPage:true});
+    await page.goto(origin+'/explore');
+    await page.getByLabel('Trace ID',{exact:true}).fill(id);
+    assert(await page.getByLabel('Lookup scope').inputValue() === 'time_range','Default scope');
+    await page.getByLabel('Lookup scope').selectOption('all_retained');
+    await page.getByRole('button',{name:'Run query',exact:true}).click();
+    await child().waitFor();
+    const explore = await details();
+    await page.screenshot({path:'/artifacts/GH-2-explore.png',fullPage:true});
+    await page.getByRole('link',{name:'View Linked Span TraceID:abcdef0123456789abcdef0123456789 SpanID:3333333333333333'}).click();
+    await page.getByRole('heading',{name:'payments: payment attempt',exact:true}).waitFor();
+    assert(await page.getByRole('button',{name:'abcdef0123456789abcdef0123456789',exact:true}).isVisible(),'Native link target');
+    const linked = await page.locator('body').innerText();
+    const panes = {test:{datasource:'object-storage-traces',queries:[{refId:'A',traceId:id}],range:{from:'2026-10-02T00:00:00Z',to:'2026-10-02T00:01:00Z'}}};
+    await page.goto(origin+'/explore?schemaVersion=1&panes='+encodeURIComponent(JSON.stringify(panes)));
+    await child().waitFor();
+    const successfulConsole = [...consoleErrors];
+    assert(successfulConsole.length === 0,'Successful navigation console: '+successfulConsole.join('\n'));
+    const before = responses.length;
+    await page.getByRole('button',{name:'Move time range forwards',exact:true}).click();
+    await page.getByRole('alert',{name:'Query error'}).waitFor();
+    const scopeError = await page.getByRole('alert',{name:'Query error'}).innerText();
+    assert(scopeError.includes('explicitly choose All retained data'),'Visible widening hint');
+    const missRequests = responses.slice(before).filter(r=>r.url.includes('/api/v1/traces/'));
+    assert(missRequests.length > 0 && missRequests.every(r=>r.status===404 && new URL(r.url).searchParams.has('start')),'No automatic widening after miss');
+    await page.screenshot({path:'/artifacts/GH-2-scope-error.png',fullPage:true});
+    await page.getByLabel('Lookup scope').selectOption('all_retained');
+    await page.getByRole('button',{name:'Run query',exact:true}).click();
+    await child().waitFor();
+    assert(errors.length===0,'Uncaught errors: '+errors.join('\n'));
+    assert(requests.every(u=>new URL(u).origin===origin),'Unexpected browser request origin');
+    const proxy = responses.filter(r=>r.url.includes('/api/v1/traces/'));
+    assert(proxy.every(r=>r.url.startsWith(origin+'/api/datasources/proxy/uid/object-storage-traces/')),'Proxy routing');
+    assert(proxy.some(r=>r.status===200 && new URL(r.url).searchParams.has('start')),'Bounded success');
+    assert(proxy.some(r=>r.status===200 && !new URL(r.url).searchParams.has('start')),'All retained success');
+    return {result:'PASS',dashboard,explore,linked,scopeError,proxy,successfulConsole,consoleErrors,pageErrors:errors,requestOrigins:[...new Set(requests.map(u=>new URL(u).origin))]};
+  } finally {
+    page.off('request',onRequest); page.off('response',onResponse);
+    page.off('pageerror',onError); page.off('console',onConsole);
+  }
+}
