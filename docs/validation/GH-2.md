@@ -1,12 +1,12 @@
 # GH-2 validation status
 
-Date: 2026-10-04. Branch: `symphony/GH-2`.
+Date: 2026-10-05. Branch: `symphony/GH-2`.
 
 ## Result
 
 Containerized build, frame contracts, provisioning and HTTP proxy integration
 pass. **Acceptance remains incomplete:** the required real browser walkthrough
-is blocked by Computer Use authorization. No validated draft PR is claimed.
+is blocked by the injected Playwright tool approval policy. No validated draft PR is claimed.
 
 ## Environment and isolation
 
@@ -77,21 +77,45 @@ Using a writable, ignored workspace Buildx cache as shown above succeeded.
 No sandbox permissions were changed. `.tools` contents and `.env` are untracked
 and excluded from the commit and Docker build context.
 
+## Resumed validation on 2026-10-05
+
+The operator's preliminary Docker browser run found a runtime error:
+`SystemJS: failed to resolve 'react/jsx-runtime'`, with a 404 for
+`/react/jsx-runtime`. TypeScript now compiles classic JSX using the already
+imported React API; webpack no longer declares the unavailable JSX runtime as
+an external. The resulting AMD bundle lists only Grafana data/runtime/ui,
+React and RxJS as externals.
+
+Re-ran `BUILDX_CONFIG="$PWD/.tools/buildx" make test-grafana`: **PASS**, exit 0.
+Both frame contract tests passed, TypeScript and webpack compiled successfully,
+Grafana was recreated and became healthy, and the containerized provisioning/
+data-proxy integration printed the PASS output above. Host remains `arm64`;
+Docker reports `aarch64 8 8319770624`. Both rebuilt service images inspect as
+`linux/arm64`. `./tools/compose.sh port grafana 3000` reports
+`127.0.0.1:3000`. `git diff --check` passed.
+
 ## Remaining blocker and unrun checks
 
-Browser inventory via `cua.getState()` returned no enabled browsers. Selecting
-running Chrome via `cua.getApp('com.google.Chrome')` returned exactly:
+The required injected Docker browser tool was called directly:
 
 ```text
-Computer Use was not approved to use Google Chrome
+symphony_playwright.browser_navigate(
+  url="http://host.docker.internal:3000/d/trace-contract")
+→ MCP tool call requires approval, but approval policy is never
 ```
 
-Explore rendering, provisioned dashboard visual rendering, interactive span/
-error/event/reference inspection, and browser network inspection are **unrun**.
-HTTP integration verifies the proxy itself, not browser rendering or browser
-request behavior. Resume with approved browser access and follow
-`docs/grafana-fixture.md`; fix any discovered browser compatibility errors before
-creating the requested validated draft PR or moving to review.
+The read-only `symphony_playwright.browser_snapshot({})` succeeded but returned
+`Page URL: about:blank` with an empty snapshot. Tool discovery/read access does
+not establish permission to navigate. No desktop browser was required or used;
+no policy override or alternative browser execution was attempted.
+
+Explore/dashboard visual rendering, interactive span/error/event/reference
+inspection, and browser console/network acceptance remain **UNRUN** on the
+corrected build. No screenshots from this build or validated draft PR are
+claimed. HTTP tests establish proxy behavior, not browser acceptance. Resume
+with navigation permitted for the injected Playwright tools and follow
+`docs/grafana-fixture.md`, fixing any remaining visual compatibility errors
+before creating the requested validated draft PR or moving to review.
 
 The unrelated GH-1 foundation suite was not rerun. No full ingestion/storage
 query pipeline, search flow, deduplication engine or benchmark is claimed by

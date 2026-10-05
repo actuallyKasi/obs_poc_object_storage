@@ -35,7 +35,12 @@ through `getBackendSrv().fetch`; it never contacts Docker DNS names or S3.
 
 ## Real browser walkthrough
 
-1. Open `http://localhost:3000/d/trace-contract`. The provisioned dashboard shows
+For Symphony browser checks, use the injected `symphony_playwright` MCP tools
+and `http://host.docker.internal:3000` as the Grafana origin. Artifacts under
+`/artifacts` map to this clone's ignored `.tools/playwright` directory; copy
+selected review evidence into `docs/validation`. Desktop Chrome is not needed.
+
+1. Open `http://localhost:3000/d/trace-contract` (or the Docker browser origin above). The provisioned dashboard shows
    `POST /checkout` with a `charge card` child, 10 ms total and 1.5 ms child.
 2. Expand `charge card`: inspect the error marker, boolean error tag, `exception`
    event with `Card declined`, and the linked span reference and its `reason` tag.
