@@ -92,6 +92,7 @@ class LauncherTests(unittest.TestCase):
         command = launcher.app_server_command(self.workspace)
         self.assertEqual(command[:2], ["codex", "app-server"])
         overrides = dict(value.split("=", 1) for value in command[3::2])
+        self.assertEqual(json.loads(overrides["mcp_servers.symphony_playwright.default_tools_approval_mode"]), "approve")
         arguments = json.loads(overrides["mcp_servers.symphony_playwright.args"])
         self.assertIn(f"type=bind,src={self.workspace}/.tools/playwright,dst=/artifacts", arguments)
         self.assertIn("--isolated", arguments)

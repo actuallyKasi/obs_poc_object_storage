@@ -61,6 +61,7 @@ def app_server_command(workspace):
     for key, value in {
         "command": "docker", "args": browser_args,
         "startup_timeout_sec": 60, "tool_timeout_sec": 120,
+        "default_tools_approval_mode": "approve",
     }.items():
         command.extend(["-c", f"mcp_servers.symphony_playwright.{key}={json.dumps(value)}"])
     return command
